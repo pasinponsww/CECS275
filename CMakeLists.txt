@@ -24,6 +24,7 @@ set(GUI_SRC_FILES
     gui/src/main_window.cpp
     gui/src/gui_data.cpp
     gui/src/pie_chart.cpp
+    gui/src/line_chart.cpp
     common/core/utils.cpp
     common/math/taxmath.cpp
 )

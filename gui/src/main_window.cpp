@@ -3,7 +3,9 @@
 #include "../../common/math/taxmath.h"
 #include "../../common/core/utils.h"
 #include "../../common/virtual/tax.h"
+
 #include "pie_chart.h"
+#include "line_chart.h"
 
 // System/GTK includes
 #include <gtk/gtk.h>
@@ -242,50 +244,50 @@ static void on_generate_profiles_clicked(GtkButton*, gpointer user_data)
             all_rates[y].push_back(effectiveRate);
         }
     }
-    // Pie chart
-    std::vector<double> percentages;
-    for (int c : counts)
-    {
-        percentages.push_back(100.0 * c / SAMPLE_SIZE);
-    }
 
-    std::vector<std::string> labels;
-    for (auto& r : ranges)
-    {
-        labels.push_back(r.label);
-    }
-    GtkWidget* chart = create_pie_chart(percentages, labels);
-    // Remove old chart
-    GList* children = gtk_container_get_children(GTK_CONTAINER(w->pie_area));
-    for (GList* iter = children; iter != NULL; iter = iter->next)
-    {
-        gtk_widget_destroy(GTK_WIDGET(iter->data));
-    }
-    g_list_free(children);
-    gtk_box_pack_start(GTK_BOX(w->pie_area), chart, FALSE, FALSE, 0);
-    gtk_widget_show_all(w->pie_area);
-
-    // Calculate stats
-    std::ostringstream oss;
+    // Calculate stats for each year
     for (int y = 0; y <= 50; ++y)
     {
         auto& incomes = all_incomes[y];
         std::sort(incomes.begin(), incomes.end());
         double sum = 0.0;
         for (double v : incomes)
-        {
             sum += v;
-        }
-
         double rateSum = 0.0;
         for (double v : all_rates[y])
-        {
             rateSum += v;
-        }
         avg_income[y] = sum / incomes.size();
         med_income[y] = incomes[incomes.size() / 2];
         avg_rate[y] = rateSum / all_rates[y].size();
     }
+
+    // Pie chart
+    std::vector<double> percentages;
+    for (int c : counts)
+        percentages.push_back(100.0 * c / SAMPLE_SIZE);
+    std::vector<std::string> labels;
+    for (auto& r : ranges)
+        labels.push_back(r.label);
+    GtkWidget* pie_chart = create_pie_chart(percentages, labels);
+
+    // Prepare line chart data
+    std::vector<int> years;
+    for (int y = 0; y <= 50; ++y)
+        years.push_back(1975 + y);
+    GtkWidget* line_chart = create_line_chart(years, avg_income, med_income, avg_rate);
+
+    // Remove old charts
+    GList* children = gtk_container_get_children(GTK_CONTAINER(w->pie_area));
+    for (GList* iter = children; iter != NULL; iter = iter->next)
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+    g_list_free(children);
+    // Add pie chart and line chart
+    gtk_box_pack_start(GTK_BOX(w->pie_area), pie_chart, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(w->pie_area), line_chart, FALSE, FALSE, 0);
+    gtk_widget_show_all(w->pie_area);
+
+    // Summary label
+    std::ostringstream oss;
     oss << "Year  Income (avg/med)  Avg rate\n";
     for (int y = 0; y <= 50; y += 5)
     {
@@ -293,7 +295,8 @@ static void on_generate_profiles_clicked(GtkButton*, gpointer user_data)
             << avg_rate[y] << "%\n";
     }
     gtk_label_set_text(GTK_LABEL(w->summary_label), oss.str().c_str());
-    gtk_label_set_text(GTK_LABEL(w->line_label), "Line chart data generated in the summary below.");
+    gtk_label_set_text(GTK_LABEL(w->line_label),
+                       "Line chart below: Avg/Med Income & Avg Eff. Rate (1975-2025)");
 }
 
 GtkWidget* MainWindow::build_part_a(const std::string& username, const std::string& avatarPath)
