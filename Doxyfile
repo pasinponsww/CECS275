@@ -1,0 +1,44 @@
+# Doxyfile
+# Generates HTML documentation for the GUI tax study app.
+
+PROJECT_NAME           = "CECS275 Tax Study GUI"
+PROJECT_BRIEF          = "GTK GUI tax study app with shared tax helpers and virtual calculators"
+OUTPUT_DIRECTORY       = docs/doxygen
+
+INPUT                  = README.md \
+                         common \
+                         gui/src
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h \
+                         *.cpp \
+                         *.md
+
+USE_MDFILE_AS_MAINPAGE = README.md
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+GENERATE_TREEVIEW      = YES
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = NO
+MULTILINE_CPP_IS_BRIEF = NO
+
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+WARN_AS_ERROR          = NO
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = NO
+
+HAVE_DOT               = NO

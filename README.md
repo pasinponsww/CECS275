@@ -1,4 +1,4 @@
-### Final Project
+# CECS275 Final Project
 
 
 ## Toolchain and Setup Requirements
@@ -21,7 +21,6 @@ To build and run this project on Windows, you need the following tools:
 
 4. **GTK 3 (for GUI)**
 	- Download the GTK 3 bundle for Windows from: https://www.gtk.org/download/windows.php
-	- See [gui/GTK_SETUP.md](gui/GTK_SETUP.md) for detailed setup instructions (including PATH and PKG_CONFIG_PATH).
 	- Make sure `pkg-config.exe` is in your PATH (comes with MSYS2 or can be downloaded separately).
 
 ---
@@ -30,11 +29,8 @@ To build and run this project on Windows, you need the following tools:
 
 This project is GUI-only and uses GTK 3. The GUI executable is built as `gui/gui_tax_app.exe`.
 
-**GTK 3 Setup:**
-See [gui/GTK_SETUP.md](gui/GTK_SETUP.md) for step-by-step instructions to set up GTK 3 on Windows and integrate with CMake/MinGW.
-
 **To build and run the GUI:**
-1. Follow the GTK setup instructions.
+1. Install MSYS2 UCRT64 with GTK 3 available.
 2. Run the build script or CMake commands as above.
 3. The GUI executable will be in the `gui/` folder as `gui_tax_app.exe`.
 4. Run it with:
@@ -56,6 +52,31 @@ See [gui/GTK_SETUP.md](gui/GTK_SETUP.md) for step-by-step instructions to set up
 	This script will configure and build the project using CMake and MinGW.
 
 3. The GUI executable will be generated in the `gui` directory.
+
+### Doxygen Documentation
+
+This project can generate Doxygen HTML documentation for the GUI, core helpers,
+math helpers, and virtual tax calculator classes.
+
+To generate the HTML locally:
+
+```powershell
+.\docs.ps1
+```
+
+Then open:
+
+```text
+docs/doxygen/html/index.html
+```
+
+The repository also includes a GitHub Actions workflow that publishes the
+Doxygen HTML to GitHub Pages. After pushing to GitHub, enable GitHub Pages with
+the source set to **GitHub Actions**. The public documentation link will be:
+
+```text
+https://<your-github-username>.github.io/<your-repository-name>/
+```
 
 ### Troubleshooting
 

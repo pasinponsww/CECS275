@@ -4,13 +4,11 @@
  */
 
 #include "utils.h"
-
 #include <cctype>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include "taxmath.h"
 
 using namespace std;
@@ -24,7 +22,6 @@ bool deductionLoaded = false;
 
 namespace
 {
-
 struct BracketRow
 {
     int year;
