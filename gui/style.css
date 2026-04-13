@@ -1,0 +1,159 @@
+window,
+.background
+{
+    background: #f4f7f6;
+    color: #1f2933;
+}
+
+label,
+entry,
+spinbutton,
+combobox,
+notebook,
+grid,
+box
+{
+    color: #1f2933;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 15px;
+}
+
+notebook
+{
+    background: #f4f7f6;
+    border: 0;
+}
+
+notebook > header
+{
+    background: #ffffff;
+    border-bottom: 1px solid #d7dee2;
+    padding: 8px 16px 0 16px;
+}
+
+notebook tab
+{
+    background: transparent;
+    border: 0;
+    border-radius: 8px 8px 0 0;
+    margin: 0 4px;
+    padding: 8px 16px;
+}
+
+notebook tab:checked
+{
+    background: #e7f4f1;
+    border-bottom: 3px solid #12806a;
+}
+
+.page
+{
+    background: #f4f7f6;
+    padding: 22px;
+}
+
+.panel
+{
+    background: #ffffff;
+    border: 1px solid #d7dee2;
+    border-radius: 8px;
+    padding: 18px;
+}
+
+.hero
+{
+    background: #ffffff;
+    border: 1px solid #d7dee2;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.title
+{
+    color: #12352f;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.subtitle
+{
+    color: #52616b;
+    font-size: 15px;
+}
+
+.section-title
+{
+    color: #12352f;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.metric
+{
+    color: #12806a;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.result
+{
+    background: #fff7e8;
+    border: 1px solid #f0c36d;
+    border-radius: 8px;
+    color: #263238;
+    padding: 14px;
+}
+
+.avatar-frame
+{
+    background: #e7f4f1;
+    border: 1px solid #b7d7cf;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+button
+{
+    background: #12806a;
+    border: 1px solid #0e6b59;
+    border-radius: 8px;
+    box-shadow: none;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 8px 18px;
+}
+
+button:hover
+{
+    background: #0e6b59;
+    border-color: #095244;
+}
+
+entry,
+spinbutton,
+combobox
+{
+    background: #ffffff;
+    border: 1px solid #bac7ce;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+grid.data-table
+{
+    background: #ffffff;
+    border: 1px solid #d7dee2;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.table-header
+{
+    color: #12352f;
+    font-weight: 700;
+}
+
+.table-cell
+{
+    color: #263238;
+}

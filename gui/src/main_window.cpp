@@ -1,25 +1,98 @@
+// Project includes
+#include "main_window.h"
 #include "../../common/math/taxmath.h"
 #include "../../common/core/utils.h"
 #include "../../common/virtual/tax.h"
-#include <vector>
-#include <sstream>
-#include <random>
-#include <algorithm>
 #include "pie_chart.h"
 
-// --- update_bracket_table must be defined before use ---
+// System/GTK includes
+#include <gtk/gtk.h>
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <random>
+#include <sstream>
+#include <vector>
+
+namespace
+{
+
+void addClass(GtkWidget* widget, const char* className)
+{
+    GtkStyleContext* context = gtk_widget_get_style_context(widget);
+    gtk_style_context_add_class(context, className);
+}
+
+GtkWidget* makeLabel(const std::string& text, const char* className)
+{
+    GtkWidget* label = gtk_label_new(text.c_str());
+    gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+    addClass(label, className);
+    return label;
+}
+
+GtkWidget* makePanel(GtkOrientation orientation, int spacing)
+{
+    GtkWidget* panel = gtk_box_new(orientation, spacing);
+    addClass(panel, "panel");
+    return panel;
+}
+
+GtkWidget* makeAvatar(const std::string& avatarPath)
+{
+    GtkWidget* frame = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    addClass(frame, "avatar-frame");
+
+    GtkWidget* avatar = nullptr;
+    if (!avatarPath.empty())
+    {
+        GError* error = nullptr;
+        GdkPixbuf* pixbuf =
+            gdk_pixbuf_new_from_file_at_scale(avatarPath.c_str(), 180, 180, TRUE, &error);
+
+        if (pixbuf)
+        {
+            avatar = gtk_image_new_from_pixbuf(pixbuf);
+            g_object_unref(pixbuf);
+        }
+        else
+        {
+            avatar = gtk_label_new("Avatar not found");
+            if (error)
+            {
+                g_error_free(error);
+            }
+        }
+    }
+    else
+    {
+        avatar = gtk_label_new("No avatar selected");
+    }
+
+    gtk_box_pack_start(GTK_BOX(frame), avatar, FALSE, FALSE, 0);
+    return frame;
+}
+
+} // namespace
+
 void update_bracket_table(GtkWidget* table, int year, int statusIdx)
 {
     // Remove all children
     GList* children = gtk_container_get_children(GTK_CONTAINER(table));
     for (GList* iter = children; iter != NULL; iter = iter->next)
+    {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
+    }
     g_list_free(children);
 
     // Header
-    gtk_grid_attach(GTK_GRID(table), gtk_label_new("Rate"), 0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(table), gtk_label_new("From"), 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(table), gtk_label_new("Up To"), 2, 0, 1, 1);
+    GtkWidget* rateHeader = makeLabel("Rate", "table-header");
+    GtkWidget* fromHeader = makeLabel("From", "table-header");
+    GtkWidget* upToHeader = makeLabel("Up To", "table-header");
+    gtk_grid_attach(GTK_GRID(table), rateHeader, 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(table), fromHeader, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(table), upToHeader, 2, 0, 1, 1);
 
     double lower = 0.0;
     int yi = Tax::yearToIndex(year);
@@ -40,9 +113,9 @@ void update_bracket_table(GtkWidget* table, int year, int statusIdx)
         {
             toStr << "$" << upper;
         }
-        gtk_grid_attach(GTK_GRID(table), gtk_label_new(rateStr.str().c_str()), 0, b + 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(table), gtk_label_new(fromStr.str().c_str()), 1, b + 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(table), gtk_label_new(toStr.str().c_str()), 2, b + 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(table), makeLabel(rateStr.str(), "table-cell"), 0, b + 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(table), makeLabel(fromStr.str(), "table-cell"), 1, b + 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(table), makeLabel(toStr.str(), "table-cell"), 2, b + 1, 1, 1);
         if (upper > 0.0)
         {
             lower = upper;
@@ -185,7 +258,9 @@ static void on_generate_profiles_clicked(GtkButton*, gpointer user_data)
     // Remove old chart
     GList* children = gtk_container_get_children(GTK_CONTAINER(w->pie_area));
     for (GList* iter = children; iter != NULL; iter = iter->next)
+    {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
+    }
     g_list_free(children);
     gtk_box_pack_start(GTK_BOX(w->pie_area), chart, FALSE, FALSE, 0);
     gtk_widget_show_all(w->pie_area);
@@ -220,34 +295,47 @@ static void on_generate_profiles_clicked(GtkButton*, gpointer user_data)
     gtk_label_set_text(GTK_LABEL(w->summary_label), oss.str().c_str());
     gtk_label_set_text(GTK_LABEL(w->line_label), "Line chart data generated in the summary below.");
 }
-// main_window.cpp
-#include "main_window.h"
-#include <gtk/gtk.h>
-#include <sstream>
 
 GtkWidget* MainWindow::build_part_a(const std::string& username, const std::string& avatarPath)
 {
-    GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-    std::ostringstream oss;
-    oss << "Welcome, " << username << "!";
-    GtkWidget* label = gtk_label_new(oss.str().c_str());
-    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-    if (!avatarPath.empty())
-    {
-        GtkWidget* avatar = gtk_label_new(("Avatar: " + avatarPath).c_str());
-        gtk_box_pack_start(GTK_BOX(box), avatar, FALSE, FALSE, 0);
-    }
-    return box;
-}
+    GtkWidget* page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 18);
+    addClass(page, "page");
 
-#include "../../common/math/taxmath.h"
-#include "../../common/core/utils.h"
-#include <vector>
-#include <sstream>
+    GtkWidget* hero = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 24);
+    addClass(hero, "hero");
+
+    GtkWidget* copy = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+    std::ostringstream title;
+    title << "Welcome, " << username;
+
+    gtk_box_pack_start(GTK_BOX(copy), makeLabel(title.str(), "title"), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(copy),
+                       makeLabel("Your tax workspace is ready. Use the calculator and "
+                                 "simulation tabs to explore federal tax data.",
+                                 "subtitle"),
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(copy), makeLabel("Login complete", "metric"), FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(hero), copy, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(hero), makeAvatar(avatarPath), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(page), hero, FALSE, FALSE, 0);
+
+    return page;
+}
 
 GtkWidget* MainWindow::build_part_b()
 {
-    GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+    GtkWidget* page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 16);
+    addClass(page, "page");
+
+    gtk_box_pack_start(GTK_BOX(page), makeLabel("Tax Calculator", "title"), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(page),
+                       makeLabel("Select a year, review the bracket table, then calculate "
+                                 "an estimated federal tax.",
+                                 "subtitle"),
+                       FALSE, FALSE, 0);
+
+    GtkWidget* box = makePanel(GTK_ORIENTATION_VERTICAL, 12);
 
     // Year selection
     GtkWidget* year_label = gtk_label_new("Tax Year:");
@@ -258,7 +346,9 @@ GtkWidget* MainWindow::build_part_b()
     GtkWidget* status_label = gtk_label_new("Filing Status:");
     GtkWidget* status_combo = gtk_combo_box_text_new();
     for (int i = 0; i < NUM_STATUSES; ++i)
+    {
         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(status_combo), STATUS_NAMES[i]);
+    }
     gtk_combo_box_set_active(GTK_COMBO_BOX(status_combo), 0);
 
     // Income entry
@@ -268,16 +358,28 @@ GtkWidget* MainWindow::build_part_b()
 
     // Deduction display
     GtkWidget* deduction_label = gtk_label_new("");
+    addClass(deduction_label, "metric");
 
     // Bracket table
     GtkWidget* bracket_table = gtk_grid_new();
+    addClass(bracket_table, "data-table");
+    gtk_grid_set_row_spacing(GTK_GRID(bracket_table), 8);
+    gtk_grid_set_column_spacing(GTK_GRID(bracket_table), 24);
+    GtkWidget* bracket_scroll = gtk_scrolled_window_new(nullptr, nullptr);
+    gtk_widget_set_size_request(bracket_scroll, -1, 330);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(bracket_scroll), GTK_POLICY_AUTOMATIC,
+                                   GTK_POLICY_AUTOMATIC);
+    gtk_container_add(GTK_CONTAINER(bracket_scroll), bracket_table);
 
     // Calculate button
     GtkWidget* calc_btn = gtk_button_new_with_label("Calculate Tax");
     GtkWidget* random_btn = gtk_button_new_with_label("Random Profile");
 
     // Result area
-    GtkWidget* result_label = gtk_label_new("");
+    GtkWidget* result_label =
+        gtk_label_new("Enter an income, then calculate or generate a random profile.");
+    addClass(result_label, "result");
+    gtk_label_set_xalign(GTK_LABEL(result_label), 0.0);
 
     // Layout
     GtkWidget* row1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
@@ -294,7 +396,7 @@ GtkWidget* MainWindow::build_part_b()
 
     gtk_box_pack_start(GTK_BOX(box), row1, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), deduction_label, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(box), bracket_table, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), bracket_scroll, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(box), row2, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), result_label, FALSE, FALSE, 0);
 
@@ -311,19 +413,30 @@ GtkWidget* MainWindow::build_part_b()
     RandWidgets* rand_widgets = new RandWidgets{year_spin, status_combo, income_entry};
     g_signal_connect(random_btn, "clicked", G_CALLBACK(on_random_btn_clicked), rand_widgets);
 
-    return box;
+    gtk_box_pack_start(GTK_BOX(page), box, FALSE, FALSE, 0);
+    return page;
 }
-
-#include "pie_chart.h"
-#include <random>
 
 GtkWidget* MainWindow::build_part_c()
 {
-    GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+    GtkWidget* page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 16);
+    addClass(page, "page");
+
+    gtk_box_pack_start(GTK_BOX(page), makeLabel("Simulation", "title"), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(page),
+                       makeLabel("Generate 1000 fake profiles and summarize income ranges, "
+                                 "income averages, and effective tax rates.",
+                                 "subtitle"),
+                       FALSE, FALSE, 0);
+
+    GtkWidget* box = makePanel(GTK_ORIENTATION_VERTICAL, 12);
     GtkWidget* btn = gtk_button_new_with_label("Generate 1000 Fake Profiles");
     GtkWidget* pie_area = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-    GtkWidget* line_label = gtk_label_new("(Line chart placeholder)");
-    GtkWidget* summary_label = gtk_label_new("");
+    GtkWidget* line_label = gtk_label_new("No simulation generated yet.");
+    GtkWidget* summary_label = gtk_label_new("Click the button to create the sample and chart.");
+    addClass(line_label, "metric");
+    addClass(summary_label, "result");
+    gtk_label_set_xalign(GTK_LABEL(summary_label), 0.0);
 
     gtk_box_pack_start(GTK_BOX(box), btn, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), pie_area, FALSE, FALSE, 0);
@@ -333,12 +446,14 @@ GtkWidget* MainWindow::build_part_c()
     PieWidgets* pie_widgets = new PieWidgets{pie_area, line_label, summary_label};
     g_signal_connect(btn, "clicked", G_CALLBACK(on_generate_profiles_clicked), pie_widgets);
 
-    return box;
+    gtk_box_pack_start(GTK_BOX(page), box, FALSE, FALSE, 0);
+    return page;
 }
 
 MainWindow::MainWindow(const std::string& username, const std::string& avatarPath)
 {
     notebook = gtk_notebook_new();
+    addClass(notebook, "app-notebook");
     GtkWidget* tab_a = build_part_a(username, avatarPath);
     GtkWidget* tab_b = build_part_b();
     GtkWidget* tab_c = build_part_c();
