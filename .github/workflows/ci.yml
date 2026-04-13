@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gui-build-and-format:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-gtk3
+            mingw-w64-ucrt-x86_64-clang-tools-extra
+            make
+
+      - name: Format Check
+        run: ./format.sh
+
+      - name: Configure
+        run: >
+          cmake
+          -G "MinGW Makefiles"
+          -S .
+          -B build
+          -DCMAKE_C_COMPILER=/ucrt64/bin/gcc.exe
+          -DCMAKE_CXX_COMPILER=/ucrt64/bin/g++.exe
+
+      - name: Build
+        run: cmake --build build
